@@ -56,6 +56,8 @@ class Peer;
  */
 class Switch
 {
+		uint64_t _lastHey;
+
 	struct ManagedQueue;
 	struct TXQueueEntry;
 
@@ -67,6 +69,9 @@ class Switch
 	} dqr;
 
 public:
+
+	void hey(void *tPtr, SharedPtr<Peer> peer, int64_t now);
+
 	Switch(const RuntimeEnvironment *renv);
 
 	/**

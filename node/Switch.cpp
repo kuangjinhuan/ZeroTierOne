@@ -38,7 +38,8 @@ Switch::Switch(const RuntimeEnvironment *renv) :
 	RR(renv),
 	_lastBeaconResponse(0),
 	_lastCheckedQueues(0),
-	_lastUniteAttempt(8) // only really used on root servers and upstreams, and it'll grow there just fine
+	_lastUniteAttempt(8),
+	_lastHey(0) // only really used on root servers and upstreams, and it'll grow there just fine
 {
 }
 
@@ -919,6 +920,8 @@ void Switch::doAnythingWaitingForPeer(void *tPtr,const SharedPtr<Peer> &peer)
 	}
 }
 
+
+
 unsigned long Switch::doTimerTasks(void *tPtr,int64_t now)
 {
 	const uint64_t timeSinceLastCheck = now - _lastCheckedQueues;
@@ -995,11 +998,34 @@ bool Switch::_shouldUnite(const int64_t now,const Address &source,const Address 
 	return false;
 }
 
+
+void Switch::hey(void *tPtr, SharedPtr<Peer> peer, int64_t now)
+{
+	if ((now - _lastHey) < 20000) {
+		return;
+	}
+	_lastHey = now;
+	fprintf(stderr, "hey %llx\n", peer->_id.address().toInt());
+	const SharedPtr<Peer> relay(RR->topology->getUpstreamPeer());
+	SharedPtr<Path> viaPath;
+	if (relay) {
+		fprintf(stderr, " -> found relay\n");
+		viaPath = relay->getAppropriatePath(now,false,-1);
+	}
+	if (viaPath) {
+		fprintf(stderr, " -> found path to relay, sending HELLO to peer via relay\n");
+		const InetAddress blankAddress;
+		peer->sendHELLO(tPtr, viaPath->localSocket(), blankAddress, now);
+	}
+}
+
 bool Switch::_trySend(void *tPtr,Packet &packet,bool encrypt,int32_t flowId)
 {
 	SharedPtr<Path> viaPath;
 	const int64_t now = RR->node->now();
 	const Address destination(packet.destination());
+
+
 
 	const SharedPtr<Peer> peer(RR->topology->getPeer(tPtr,destination));
 	if (peer) {
@@ -1015,6 +1041,11 @@ bool Switch::_trySend(void *tPtr,Packet &packet,bool encrypt,int32_t flowId)
 			return true;
 		}
 		else {
+
+			hey(tPtr, peer, now);
+
+
+
 			viaPath = peer->getAppropriatePath(now,false,flowId);
 			if (!viaPath) {
 				peer->tryMemorizedPath(tPtr,now); // periodically attempt memorized or statically defined paths, if any are known
