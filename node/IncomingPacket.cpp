@@ -265,6 +265,8 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 	Identity id;
 	unsigned int ptr = ZT_PROTO_VERB_HELLO_IDX_IDENTITY + id.deserialize(*this,ZT_PROTO_VERB_HELLO_IDX_IDENTITY);
 
+	fprintf(stderr, "HELLO from %llx\n", id.address().toInt());
+
 	if (protoVersion < ZT_PROTO_VERSION_MIN) {
 		RR->t->incomingPacketDroppedHELLO(tPtr,_path,pid,fromAddress,"protocol version too old");
 		return true;
@@ -276,6 +278,7 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 
 	SharedPtr<Peer> peer(RR->topology->getPeer(tPtr,id.address()));
 	if (peer) {
+		fprintf(stderr, "  already known\n");
 		// We already have an identity with this address -- check for collisions
 		if (!alreadyAuthenticated) {
 			if (peer->identity() != id) {
@@ -315,6 +318,7 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 			}
 		} // else if alreadyAuthenticated then continue at // VALID
 	} else {
+		fprintf(stderr, "  not already known\n");
 		// We don't already have an identity with this address -- validate and learn it
 
 		// Sanity check: this basically can't happen
