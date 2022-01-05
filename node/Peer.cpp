@@ -196,10 +196,24 @@ void Peer::received(
 				}
 			} else {
 				Mutex::Lock ltl(_lastTriedPath_m);
-				_lastTriedPath.push_back(std::pair< Path *, int64_t >(path.ptr(), now));
-				attemptToContactAt(tPtr,path->localSocket(),path->address(),now,true);
-				path->sent(now);
-				RR->t->peerConfirmingUnknownPath(tPtr,networkId,*this,path,packetId,verb);
+				bool triedTooRecently = false;
+				for(std::list< std::pair< Path *, int64_t > >::iterator i(_lastTriedPath.begin());i!=_lastTriedPath.end();) {
+					   if ((now - i->second) > 1000) {
+							   _lastTriedPath.erase(i++);
+					   } else if (i->first == path.ptr()) {
+							   ++i;
+							   triedTooRecently = true;
+					   } else {
+							   ++i;
+					   }
+				}
+
+				if (!triedTooRecently) {
+					_lastTriedPath.push_back(std::pair< Path *, int64_t >(path.ptr(), now));
+					attemptToContactAt(tPtr,path->localSocket(),path->address(),now,true);
+					path->sent(now);
+					RR->t->peerConfirmingUnknownPath(tPtr,networkId,*this,path,packetId,verb);
+				}
 			}
 		}
 	}
