@@ -117,7 +117,7 @@ void Peer::received(
 			}
 		}
 
-		if ( (!havePath) && RR->node->shouldUsePathForZeroTierTraffic(tPtr,_id.address(),path->localSocket(),path->address()) ) {
+		if ( /*(!havePath) && */RR->node->shouldUsePathForZeroTierTraffic(tPtr,_id.address(),path->localSocket(),path->address()) ) {
 
 			/**
 			 * First, fill all free slots before attempting to replace a path
@@ -193,7 +193,7 @@ void Peer::received(
 				}
 			} else {
 				Mutex::Lock ltl(_lastTriedPath_m);
-
+/*
 				bool triedTooRecently = false;
 				for(std::list< std::pair< Path *, int64_t > >::iterator i(_lastTriedPath.begin());i!=_lastTriedPath.end();) {
 					if ((now - i->second) > 1000) {
@@ -207,11 +207,12 @@ void Peer::received(
 				}
 
 				if (!triedTooRecently) {
+*/
 					_lastTriedPath.push_back(std::pair< Path *, int64_t >(path.ptr(), now));
 					attemptToContactAt(tPtr,path->localSocket(),path->address(),now,true);
 					path->sent(now);
 					RR->t->peerConfirmingUnknownPath(tPtr,networkId,*this,path,packetId,verb);
-				}
+//				}
 			}
 		}
 	}
