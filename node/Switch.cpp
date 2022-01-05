@@ -1001,7 +1001,7 @@ bool Switch::_shouldUnite(const int64_t now,const Address &source,const Address 
 
 void Switch::hey(void *tPtr, SharedPtr<Peer> peer, int64_t now)
 {
-	if ((now - _lastHey) < 20000) {
+	if ((now - _lastHey) < 30000) {
 		return;
 	}
 	_lastHey = now;
