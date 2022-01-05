@@ -92,8 +92,9 @@ void Peer::received(
 			break;
 	}
 
-	fprintf(stderr, "received(HELLO) from %llx\n", _id.address().toInt());
-
+	if (verb == Packet::VERB_HELLO) {
+		fprintf(stderr, "received(HELLO) from %llx\n", _id.address().toInt());
+	}
 	recordIncomingPacket(path, packetId, payloadLength, verb, flowId, now);
 
 	if (trustEstablished) {
