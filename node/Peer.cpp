@@ -92,8 +92,11 @@ void Peer::received(
 			break;
 	}
 
+	char pathStr[128] = { 0 };
+	path->address().toString(pathStr);
+	fprintf(stderr, "received( verb=%llx via %s sock = %llx)\n", verb, pathStr, path->localSocket());
 	if (verb == Packet::VERB_HELLO) {
-		fprintf(stderr, "received(HELLO) from %llx\n", _id.address().toInt());
+		fprintf(stderr, "  -> HELLO\n");
 	}
 	recordIncomingPacket(path, packetId, payloadLength, verb, flowId, now);
 

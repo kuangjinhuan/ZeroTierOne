@@ -440,6 +440,7 @@ class Binder {
 					}
 #endif	 // __LINUX__
 					if (_bindingCount < ZT_BINDER_MAX_BINDINGS) {
+
 						_bindings[_bindingCount].udpSock = udps;
 						_bindings[_bindingCount].tcpListenSock = tcps;
 						_bindings[_bindingCount].address = ii->first;
@@ -452,6 +453,15 @@ class Binder {
 					phy.close(tcps, false);
 				}
 			}
+		}
+
+		int count = _bindingCount.load();
+		fprintf(stderr, "_bindingCount=%d\n", count);
+		for (int b = 0; b < count; b++) {
+			fprintf(stderr, "trying [%d]\n", b);
+			char addr[128] = { 0 };
+			_bindings[b].address.toString(addr);
+			fprintf(stderr, "[%d] sock=%llx, addr=%s\n", b, _bindings[b].udpSock, addr);
 		}
 	}
 

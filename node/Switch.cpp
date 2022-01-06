@@ -1013,7 +1013,9 @@ void Switch::hey(void *tPtr, SharedPtr<Peer> peer, int64_t now)
 		viaPath = relay->getAppropriatePath(now,false,-1);
 	}
 	if (viaPath) {
-		fprintf(stderr, " -> found path to relay, sending HELLO to peer via relay\n");
+		char pathStr[128] = { 0 };
+		viaPath->address().toString(pathStr);
+		fprintf(stderr, " -> found path to relay, sending HELLO to peer via path to relay (%s, sock = %llx)\n", pathStr, viaPath->localSocket());
 		const InetAddress blankAddress;
 		peer->sendHELLO(tPtr, viaPath->localSocket(), blankAddress, now);
 	}
