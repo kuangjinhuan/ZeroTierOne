@@ -98,6 +98,7 @@ void Peer::received(
 	if (verb == Packet::VERB_HELLO) {
 		fprintf(stderr, "  -> HELLO\n");
 	}
+
 	recordIncomingPacket(path, packetId, payloadLength, verb, flowId, now);
 
 	if (trustEstablished) {
@@ -119,6 +120,15 @@ void Peer::received(
 					}
 				} else {
 					break;
+				}
+			}
+			if (!havePath) {
+				for(unsigned int i=0;i<ZT_MAX_PEER_NETWORK_PATHS;++i) {
+					if (_paths[i].p) {
+						char pathStr[128] = { 0 };
+						_paths[i].p->address().toString(pathStr);
+						fprintf(stderr, "%llx ------[%d] %s %llx\n", _id.address().toInt(), i, pathStr, _paths[i].p->localSocket());
+					}
 				}
 			}
 		}
