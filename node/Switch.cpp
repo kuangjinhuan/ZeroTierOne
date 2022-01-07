@@ -1001,7 +1001,7 @@ bool Switch::_shouldUnite(const int64_t now,const Address &source,const Address 
 
 void Switch::hey(void *tPtr, SharedPtr<Peer> peer, int64_t now)
 {
-	if ((now - _lastHey) < 30000) {
+	if ((now - _lastHey) < 20000) {
 		return;
 	}
 	_lastHey = now;
@@ -1010,7 +1010,7 @@ void Switch::hey(void *tPtr, SharedPtr<Peer> peer, int64_t now)
 	SharedPtr<Path> viaPath;
 	if (relay) {
 		fprintf(stderr, " -> found relay\n");
-		viaPath = relay->getAppropriatePath(now,false,-1);
+		viaPath = relay->getNextPath(now,false,-1);
 	}
 	if (viaPath) {
 		char pathStr[128] = { 0 };

@@ -51,7 +51,8 @@ Peer::Peer(const RuntimeEnvironment *renv,const Identity &myIdentity,const Ident
 	_credentialsCutoffCount(0),
 	_echoRequestCutoffCount(0),
 	_localMultipathSupported(false),
-	_lastComputedAggregateMeanLatency(0)
+	_lastComputedAggregateMeanLatency(0),
+	lastPathIdx(ZT_MAX_PEER_NETWORK_PATHS)
 {
 	if (!myIdentity.agree(peerIdentity,_key))
 		throw ZT_EXCEPTION_INVALID_ARGUMENT;
@@ -94,10 +95,10 @@ void Peer::received(
 
 	char pathStr[128] = { 0 };
 	path->address().toString(pathStr);
-	fprintf(stderr, "received( verb=%llx via %s sock = %llx)\n", verb, pathStr, path->localSocket());
-	if (verb == Packet::VERB_HELLO) {
-		fprintf(stderr, "  -> HELLO\n");
-	}
+	//fprintf(stderr, "%llx, received( verb=%llx via %s sock = %llx)\n", _id.address().toInt(), verb, pathStr, path->localSocket());
+	//if (verb == Packet::VERB_HELLO) {
+	//	fprintf(stderr, "  -> HELLO\n");
+	//}
 
 	recordIncomingPacket(path, packetId, payloadLength, verb, flowId, now);
 
@@ -309,6 +310,45 @@ SharedPtr<Path> Peer::getAppropriatePath(int64_t now, bool includeExpired, int32
 		return SharedPtr<Path>();
 	}
 	return _bond->getAppropriatePath(now, flowId);
+}
+
+SharedPtr<Path> Peer::getNextPath(int64_t now, bool includeExpired, int32_t flowId)
+{
+	Mutex::Lock _l(_paths_m);
+	unsigned int bestPath = ZT_MAX_PEER_NETWORK_PATHS;
+	/**
+	 * Send traffic across the highest quality path only. This algorithm will still
+	 * use the old path quality metric from protocol version 9.
+	 */
+	int prevIdx = lastPathIdx;
+	int firstAlivePath = ZT_MAX_PEER_NETWORK_PATHS;
+	for(unsigned int i=0;i<ZT_MAX_PEER_NETWORK_PATHS;++i) {
+		if (_paths[i].p) {
+			if (firstAlivePath == ZT_MAX_PEER_NETWORK_PATHS) {
+				firstAlivePath = i;
+			}
+			if(lastPathIdx == ZT_MAX_PEER_NETWORK_PATHS) {
+				lastPathIdx = i;
+				break;
+			}
+			else if (lastPathIdx != ZT_MAX_PEER_NETWORK_PATHS) {
+				if (i > lastPathIdx) {
+					lastPathIdx = i;
+					break;
+				}
+			}
+
+		}
+	}
+	if (prevIdx == lastPathIdx) {
+		// did nothing
+		lastPathIdx = firstAlivePath;
+	}
+	if (lastPathIdx != ZT_MAX_PEER_NETWORK_PATHS) {
+		fprintf(stderr, "choosing send idx %d\n", lastPathIdx);
+		return _paths[lastPathIdx].p;
+	}
+	return SharedPtr<Path>();
 }
 
 void Peer::introduce(void *const tPtr,const int64_t now,const SharedPtr<Peer> &other) const

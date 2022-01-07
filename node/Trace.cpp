@@ -249,7 +249,7 @@ void Trace::incomingPacketMessageAuthenticationFailure(void *const tPtr,const Sh
 {
 	char tmp[128];
 
-	ZT_LOCAL_TRACE(tPtr,RR,"MAC failed for packet %.16llx from %.10llx(%s)",packetId,source.toInt(),(path) ? path->address().toString(tmp) : "???");
+	ZT_LOCAL_TRACE(tPtr,RR,"MAC failed for packet %.16llx from %.10llx(%s): %s",packetId,source.toInt(),(path) ? path->address().toString(tmp) : "???", reason);
 
 	if ((_globalTarget)&&((int)_globalLevel >= Trace::LEVEL_DEBUG)) {
 		Dictionary<ZT_MAX_REMOTE_TRACE_SIZE> d;

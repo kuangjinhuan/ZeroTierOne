@@ -185,6 +185,7 @@ public:
 	 */
 	SharedPtr<Path> getAppropriatePath(int64_t now, bool includeExpired, int32_t flowId = -1);
 
+	SharedPtr<Path> getNextPath(int64_t now, bool includeExpired, int32_t flowId = -1);
 
 	/**
 	 * Send VERB_RENDEZVOUS to this and another peer via the best common IP scope and path
@@ -583,6 +584,7 @@ private:
 	volatile bool _shouldCollectPathStatistics;
 
 	int32_t _lastComputedAggregateMeanLatency;
+	unsigned int lastPathIdx;
 
 	SharedPtr<Bond> _bond;
 };

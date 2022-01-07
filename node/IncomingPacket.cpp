@@ -285,8 +285,8 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 				// Identity is different from the one we already have -- address collision
 
 				// Check rate limits
-				if (!RR->node->rateGateIdentityVerification(now,_path->address()))
-					return true;
+				//if (!RR->node->rateGateIdentityVerification(now,_path->address()))
+				//	return true;
 
 				uint8_t key[ZT_SYMMETRIC_KEY_SIZE];
 				if (RR->identity.agree(id,key)) {
