@@ -122,15 +122,6 @@ void Peer::received(
 					break;
 				}
 			}
-			if (!havePath) {
-				for(unsigned int i=0;i<ZT_MAX_PEER_NETWORK_PATHS;++i) {
-					if (_paths[i].p) {
-						char pathStr[128] = { 0 };
-						_paths[i].p->address().toString(pathStr);
-						fprintf(stderr, "%llx ------[%d] %s %llx\n", _id.address().toInt(), i, pathStr, _paths[i].p->localSocket());
-					}
-				}
-			}
 		}
 
 		if ( (!havePath) && RR->node->shouldUsePathForZeroTierTraffic(tPtr,_id.address(),path->localSocket(),path->address()) ) {
@@ -199,6 +190,15 @@ void Peer::received(
 
 				if (replacePath != ZT_MAX_PEER_NETWORK_PATHS) {
 					RR->t->peerLearnedNewPath(tPtr, networkId, *this, path, packetId);
+
+					for(unsigned int i=0;i<ZT_MAX_PEER_NETWORK_PATHS;++i) {
+						if (_paths[i].p) {
+							char pathStr[128] = { 0 };
+							_paths[i].p->address().toString(pathStr);
+							fprintf(stderr, "%llx ------[%d] %s %llx\n", _id.address().toInt(), i, pathStr, _paths[i].p->localSocket());
+						}
+					}
+
 					_paths[replacePath].lr = now;
 					_paths[replacePath].p = path;
 					_paths[replacePath].priority = 1;
