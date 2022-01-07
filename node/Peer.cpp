@@ -190,6 +190,9 @@ void Peer::received(
 
 				if (replacePath != ZT_MAX_PEER_NETWORK_PATHS) {
 					RR->t->peerLearnedNewPath(tPtr, networkId, *this, path, packetId);
+					_paths[replacePath].lr = now;
+					_paths[replacePath].p = path;
+					_paths[replacePath].priority = 1;
 
 					for(unsigned int i=0;i<ZT_MAX_PEER_NETWORK_PATHS;++i) {
 						if (_paths[i].p) {
@@ -199,9 +202,6 @@ void Peer::received(
 						}
 					}
 
-					_paths[replacePath].lr = now;
-					_paths[replacePath].p = path;
-					_paths[replacePath].priority = 1;
 					Mutex::Lock _l(_bond_m);
 					if(_bond) {
 						_bond->nominatePathToBond(_paths[replacePath].p, now);
