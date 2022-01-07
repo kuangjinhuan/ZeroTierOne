@@ -265,7 +265,9 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 	Identity id;
 	unsigned int ptr = ZT_PROTO_VERB_HELLO_IDX_IDENTITY + id.deserialize(*this,ZT_PROTO_VERB_HELLO_IDX_IDENTITY);
 
-	fprintf(stderr, "HELLO from %llx\n", id.address().toInt());
+	char pathStr[128] = { 0 };
+	_path->address().toString(pathStr);
+	fprintf(stderr, "HELLO from %llx on %s sock = %llx\n", id.address().toInt(), pathStr, _path->localSocket());
 
 	if (protoVersion < ZT_PROTO_VERSION_MIN) {
 		RR->t->incomingPacketDroppedHELLO(tPtr,_path,pid,fromAddress,"protocol version too old");
@@ -285,8 +287,8 @@ bool IncomingPacket::_doHELLO(const RuntimeEnvironment *RR,void *tPtr,const bool
 				// Identity is different from the one we already have -- address collision
 
 				// Check rate limits
-				//if (!RR->node->rateGateIdentityVerification(now,_path->address()))
-				//	return true;
+				if (!RR->node->rateGateIdentityVerification(now,_path->address()))
+					return true;
 
 				uint8_t key[ZT_SYMMETRIC_KEY_SIZE];
 				if (RR->identity.agree(id,key)) {
